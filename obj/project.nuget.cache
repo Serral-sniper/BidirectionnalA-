@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "dgSpecHash": "y67P2va77us=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\Utilisateur\\Documents\\Pathfinding_A-_Bitmap-1.2\\Pathfinding Astar\\Pathfinding Astar.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Utilisateur\\.nuget\\packages\\microsoft.bcl.hashcode\\1.1.1\\microsoft.bcl.hashcode.1.1.1.nupkg.sha512",
+    "C:\\Users\\Utilisateur\\.nuget\\packages\\microsoft.win32.systemevents\\8.0.0\\microsoft.win32.systemevents.8.0.0.nupkg.sha512",
+    "C:\\Users\\Utilisateur\\.nuget\\packages\\superlinq\\6.2.0\\superlinq.6.2.0.nupkg.sha512",
+    "C:\\Users\\Utilisateur\\.nuget\\packages\\system.drawing.common\\8.0.3\\system.drawing.common.8.0.3.nupkg.sha512",
+    "C:\\Users\\Utilisateur\\.nuget\\packages\\system.memory\\4.5.5\\system.memory.4.5.5.nupkg.sha512"
+  ],
+  "logs": []
+}
