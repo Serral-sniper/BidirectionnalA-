@@ -37,7 +37,7 @@ namespace Pathfinding_Astar
             });
             Task.WaitAll(task1, task2);
             MergeTabs();
-            MapModel.GenerateBMP(mapModel);
+            MapModel.GenerateBmp(mapModel);
             
         }
         private void MergeTabs()

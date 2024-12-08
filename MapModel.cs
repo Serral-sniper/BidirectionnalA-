@@ -1,19 +1,21 @@
 ﻿
 using System.Drawing;
+using SkiaSharp;
 
 namespace Pathfinding_Astar
 {
     abstract class MapModel
     {
-        private static object Lock = new object();
-        public static int _Size = 150;
+        private static readonly object Lock = new();
+        public const int Size = 150;
+
         // Image représentant la carte
-        private static char[,] image = new char[_Size + 1,_Size + 1];
+        private static char[,] image = new char[Size + 1,Size + 1];
         // Point de départ
         public static (int x, int y) _Departure { get; private set; }
         // Point d'arrivée
         public static (int x, int y) _End { get; private set; }
-        public static Bitmap BMP = new Bitmap(_Size, _Size);
+        private static readonly SKBitmap ImageCanvas = new (new SKImageInfo(Size, Size));
 
         // Génère la carte avec un nombre spécifié de murs
         public static char[,] mapGeneration(int Wall)
@@ -29,27 +31,27 @@ namespace Pathfinding_Astar
         // Définit le point de départ aléatoirement
         private static void DeparturePoint()
         {
-            int x = new Random().Next(1, _Size - 2);
-            int y = new Random().Next(1, _Size - 2);
+            int x = new Random().Next(1, Size - 2);
+            int y = new Random().Next(1, Size - 2);
             image[x, y] = 'D';
-            MapModel._Departure = (x, y);
+            _Departure = (x, y);
         }
 
         // Définit le point d'arrivée aléatoirement
         private static void EndPoint()
         {
-            int x = new Random().Next(1, _Size - 2);
-            int y = new Random().Next(1, _Size - 2);
+            int x = new Random().Next(1, Size - 2);
+            int y = new Random().Next(1, Size - 2);
             image[x, y] = 'E';
-            MapModel._End = (x, y);
+            _End = (x, y);
         }
 
         // Réinitialise l'image en mettant tous les pixels en transparent
         private static void SetBlankSpaces()
         {
-            for (int i = 0; i < _Size; i++)
+            for (int i = 0; i < Size; i++)
             {
-                for (int j = 0; j < _Size; j++)
+                for (int j = 0; j < Size; j++)
                 {
                     image[i, j] = ' ';
                 }
@@ -62,9 +64,9 @@ namespace Pathfinding_Astar
             for (int i = 0; i < image.GetLength(0) - 1; i++)
             {
                 image[i, 0] = 'B';
-                image[i, _Size - 1] = 'B';
+                image[i, Size - 1] = 'B';
                 image[0, i] = 'B';
-                image[_Size - 1, i] = 'B';
+                image[Size - 1, i] = 'B';
             }
         }
 
@@ -78,50 +80,87 @@ namespace Pathfinding_Astar
         {
             for (int i = 0; i < Wall; i++)
             {
-                int x = new Random().Next(1, _Size - 1);
-                int y = new Random().Next(1, _Size - 1);
+                int x = new Random().Next(1, Size - 1);
+                int y = new Random().Next(1, Size - 1);
                 if ((x, y) != _Departure && (x, y) != _End)
                 {
                     image[x, y] = 'W';
                 }
             }
         }
-        public static void GenerateBMP(char[,] Image)
+        
+        public static void GenerateBmp(char[,] imageRawData)
         {
             lock (Lock)
             {
-                for (int i = 0; i < _Size; i++)
-                {
-                    for (int j = 0; j < _Size; j++)
-                    {
-                        switch (Image[i, j])
-                        {
-                            case 'B':
-                                BMP.SetPixel(i, j, Color.White);
-                                break;
-                            case 'W':
-                                BMP.SetPixel(i, j, Color.Silver);
-                                break;
-                            case 'V':
-                                BMP.SetPixel(i, j, Color.Red);
-                                break;
-                            case 'N':
-                                BMP.SetPixel(i, j, Color.Green);
-                                break;
-                            case 'P':
-                                BMP.SetPixel(i, j, Color.Blue);
-                                break;
-                            default:
-                                BMP.SetPixel(i, j, Color.Empty);
-                                break;
+                BuildImageData(imageRawData);
+                
+                ImageCanvas.SetPixel(_Departure.x, _Departure.y, SKColors.Yellow);
+                ImageCanvas.SetPixel(_End.x, _End.y, SKColors.Yellow);
 
-                        }
-                    }
-                }
-                BMP.SetPixel(MapModel._Departure.x, MapModel._Departure.y, Color.Yellow);
-                BMP.SetPixel(MapModel._End.x, MapModel._End.y, Color.Yellow);
-                BMP.Save(@"C:\Users\Utilisateur\Documents\Pathfinding_A-_Bitmap-1.2\Pathfinding Astar\SavedPath.bmp");
+                ExportImageData();
             }
+        }
+
+        private static void BuildImageData(char[,] imageRaw)
+        {
+            for (int i = 0; i < Size; i++)
+            {
+                for (int j = 0; j < Size; j++)
+                {
+                    SetPixel(imageRaw, i, j);
+                }
+            }
+        }
+
+        private static void SetPixel(char[,] imageRawData, int i, int j)
+        {
+            switch (imageRawData[i, j])
+            {
+                case 'B':
+                    ImageCanvas.SetPixel(i, j, SKColors.White);
+                    break;
+                case 'W':
+                    ImageCanvas.SetPixel(i, j, SKColors.Silver);
+                    break;
+                case 'V':
+                    ImageCanvas.SetPixel(i, j, SKColors.Red);
+                    break;
+                case 'N':
+                    ImageCanvas.SetPixel(i, j, SKColors.Green);
+                    break;
+                case 'P':
+                    ImageCanvas.SetPixel(i, j, SKColors.Blue);
+                    break;
+                default:
+                    ImageCanvas.SetPixel(i, j, SKColors.Empty);
+                    break;
+
+            }
+        }
+
+        private static void ExportImageData()
+        {
+            string workingDirectory = Environment.CurrentDirectory;
+
+            DirectoryInfo? immediateParent = Directory.GetParent(workingDirectory);
+            if (immediateParent?.Parent?.Parent is null)
+            {
+                return;
+            }
+                
+            string projectDirectory = immediateParent.Parent.Parent.FullName;
+            string outputDirectory = Path.Combine(projectDirectory, "output");
+
+            if (!Directory.Exists(outputDirectory))
+            {
+                Directory.CreateDirectory(outputDirectory);
+            }
+
+            string outputFile = Path.Combine(outputDirectory, "output.png");
+                
+            SKWStream fileStream = SKFileWStream.OpenStream(outputFile);
+            ImageCanvas.Encode(fileStream, SKEncodedImageFormat.Png, 100);
         }
     }
 }
